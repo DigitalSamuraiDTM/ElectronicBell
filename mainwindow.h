@@ -60,6 +60,8 @@ private slots:
 
     void on_Exit_clicked();
 
+    void on_autoWeek_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTimer *timer_now_time;

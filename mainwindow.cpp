@@ -194,6 +194,11 @@ void MainWindow::on_hand_mod_clicked()
 
 }
 
+void MainWindow::on_autoWeek_clicked()
+{
+
+}
+
 void MainWindow::on_auto_mod_clicked()
 {
     hand_mod = false;
@@ -457,3 +462,4 @@ void MainWindow::on_Exit_clicked()
         return;
     }
 }
+
