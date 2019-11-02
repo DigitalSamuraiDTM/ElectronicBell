@@ -21,14 +21,17 @@ MainWindow::MainWindow(QWidget *parent) :
     AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Воскресенье")<<new QStandardItem(Settings->value("Sunday", "-").toString()));
 
     Settings->endGroup();
+    AutoWeek->setHorizontalHeaderLabels(QStringList()<<"День"<<"Уроки");
     ui->view_autoWeek->setModel(AutoWeek);
+    ui->view_autoWeek->resizeColumnsToContents();
+
     customTemplate = new QStandardItemModel;
     customTemplate->setHorizontalHeaderLabels(QStringList()<<"Имя"<<"Шаблон");
     AutoSettings = new QSettings("customTemplates.ini", QSettings::IniFormat,this);
     main_player = new QMediaPlayer;
    QString rootAudio = Settings->value("RootAudio","main.mp3").toString();
     int volume = Settings->value("Volume",100).toInt();
-    bool auto_mod = Settings->value("Mod", true).toBool();
+    QString auto_mod = Settings->value("Mod", "true").toString();
 
     main_player->setVolume(volume);
     ui->slider_volume->setValue(volume);
@@ -38,6 +41,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->route_audio->setText(rootAudio);
     timer_now_time = new QTimer(this);
     connect(timer_now_time, SIGNAL(timeout()), this, SLOT(now_time()));
+
+    hand_mod_timer = new QTimer(this);
+    connect(hand_mod_timer, SIGNAL(timeout()), this, SLOT(hand_mod_now_time()));
+
+    AutoWeekTimer = new QTimer(this);
+    connect(AutoWeekTimer, SIGNAL(timeout()), this, SLOT(AutoWeek_now_time()));
+
 
     for (int i=0;i<AutoSettings->allKeys().count();i++) {
         if (AutoSettings->allKeys().at(i) =="LastTemplate")
@@ -49,17 +59,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     }
 
-    if (auto_mod==true)
+    if (auto_mod=="true")
     {
         ui->auto_mod->click();
-    } else{
+    } else if (auto_mod=="false"){
         ui->hand_mod->click();
-    }
+    } else if (auto_mod=="week") {
+        ui->autoWeek->click();
+}
     ui->view_custom_template->setModel(customTemplate);
     ui->view_custom_template->resizeColumnsToContents();
     setFont(QFont("Calibri",15));
-    timer_now_time->start(1000);
-
+    //timer_now_time->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -70,10 +81,6 @@ MainWindow::~MainWindow()
 void MainWindow::now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
-    if (hand_mod==true)
-    {
-        return;
-    }
     repeat_checking++;
     if (repeat_checking==60)
     {
@@ -197,25 +204,35 @@ void MainWindow::check_next_time_bell()
 
 void MainWindow::on_hand_mod_clicked()
 {
-    hand_mod = true;
+    AutoWeekTimer->stop();
+    timer_now_time->stop();
+    hand_mod_timer->start(1000);
+    hand_mod = "true";
     ui->auto_box->setEnabled(false);
     ui->for_call->hide();
     ui->Send_call->show();
     ui->next_call->setText("-");
     ui->event_label->setText("-");
     ui->main_group->setTitle("Подача звонка");
-    Settings->setValue("Mod", false);
+    Settings->setValue("Mod", "false");
 
 }
 
 void MainWindow::on_autoWeek_clicked()
 {
-
+    AutoWeekTimer->start(1000);
+    hand_mod_timer->stop();
+    timer_now_time->stop();
+    hand_mod = "week";
+    Settings->setValue("Mod","week");
 }
 
 void MainWindow::on_auto_mod_clicked()
 {
-    hand_mod = false;
+    AutoWeekTimer->stop();
+    hand_mod_timer->stop();
+    timer_now_time->start(1000);
+    hand_mod = "false";
     ui->auto_box->setEnabled(true);
     ui->for_call->show();
     ui->Send_call->hide();
@@ -237,7 +254,7 @@ void MainWindow::on_auto_mod_clicked()
         ui->custom_template->setChecked(true);
     }
     }
-       Settings->setValue("Mod", true);
+       Settings->setValue("Mod", "true");
 }
 
 void MainWindow::on_Send_call_clicked()
@@ -525,4 +542,15 @@ Settings->beginGroup("AutoWeek");
     Settings->endGroup();
 
     AutoWeek->setData(AutoWeek->index(row,1),time);
+}
+
+void MainWindow::hand_mod_now_time()
+{
+    ui->now_time->setText(QTime::currentTime().toString());
+}
+
+void MainWindow::AutoWeek_now_time()
+{
+    ui->now_time->setText(QTime::currentTime().toString());
+
 }

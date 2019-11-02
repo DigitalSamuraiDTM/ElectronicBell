@@ -39,7 +39,7 @@
     <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -414,7 +414,17 @@
              <item row="0" column="0">
               <layout class="QGridLayout" name="gridLayout_13">
                <item row="1" column="0" colspan="2">
-                <widget class="QTableView" name="view_autoWeek"/>
+                <widget class="QTableView" name="view_autoWeek">
+                 <attribute name="horizontalHeaderStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
+                </widget>
                </item>
                <item row="0" column="0" colspan="2">
                 <widget class="QPushButton" name="change_bell_in_autoWeek">

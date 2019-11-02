@@ -64,9 +64,14 @@ private slots:
 
     void on_change_bell_in_autoWeek_clicked();
 
+    void hand_mod_now_time();
+
+    void AutoWeek_now_time();
 private:
     Ui::MainWindow *ui;
     QTimer *timer_now_time;
+    QTimer *hand_mod_timer;
+    QTimer *AutoWeekTimer;
 
     QMediaPlayer *main_player;
     QStringList list_timing;
@@ -77,7 +82,7 @@ private:
     QSettings *AutoSettings;
     int repeat_checking = 0;
     bool na_peremeny = false;
-    bool hand_mod;
+    QString hand_mod;
     bool first_check_ostatok=false;
 
     QStandardItemModel *AutoWeek;
