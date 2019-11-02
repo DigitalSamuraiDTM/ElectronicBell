@@ -62,6 +62,8 @@ private slots:
 
     void on_autoWeek_clicked();
 
+    void on_change_bell_in_autoWeek_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTimer *timer_now_time;
@@ -78,6 +80,7 @@ private:
     bool hand_mod;
     bool first_check_ostatok=false;
 
+    QStandardItemModel *AutoWeek;
     QStandardItemModel *customTemplate;
 };
 

@@ -7,11 +7,24 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
+    Settings = new QSettings("settings.ini", QSettings::IniFormat,this);
+    AutoWeek = new QStandardItemModel;
+    Settings->beginGroup("AutoWeek");
+
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Понедельник")<<new QStandardItem(Settings->value("Monday", "45").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Вторник")<<new QStandardItem(Settings->value("Tuesday", "45").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Среда")<<new QStandardItem(Settings->value("Wednesday", "45").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Четверг")<<new QStandardItem(Settings->value("Thursday", "45").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Пятница")<<new QStandardItem(Settings->value("Friday", "45").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Суббота")<<new QStandardItem(Settings->value("Saturday", "40").toString()));
+    AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Воскресенье")<<new QStandardItem(Settings->value("Sunday", "-").toString()));
+
+    Settings->endGroup();
+    ui->view_autoWeek->setModel(AutoWeek);
     customTemplate = new QStandardItemModel;
     customTemplate->setHorizontalHeaderLabels(QStringList()<<"Имя"<<"Шаблон");
-    Settings = new QSettings("settings.ini", QSettings::IniFormat,this);
     AutoSettings = new QSettings("customTemplates.ini", QSettings::IniFormat,this);
-    ui->setupUi(this);
     main_player = new QMediaPlayer;
    QString rootAudio = Settings->value("RootAudio","main.mp3").toString();
     int volume = Settings->value("Volume",100).toInt();
@@ -44,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     ui->view_custom_template->setModel(customTemplate);
     ui->view_custom_template->resizeColumnsToContents();
+    setFont(QFont("Calibri",15));
     timer_now_time->start(1000);
 
 }
@@ -71,27 +85,27 @@ void MainWindow::now_time()
         first_check_ostatok=true;
         check_ostatok();
     } else{
-    bool was_update = false;
-    QTime out_time = QTime::fromString(ui->for_call->text());
+        bool was_update = false;
+        QTime out_time = QTime::fromString(ui->for_call->text());
 
 
 
-    if (out_time.second()==0)
-    {
-        out_time.setHMS(out_time.hour(),out_time.minute()-1,59);
-        was_update=true;
-    }
-    if (out_time.minute()==0 && out_time.second()==0)
-    {
-        out_time.setHMS(out_time.hour()-1,59,59);
-        was_update=true;
-    }
-    if (was_update==false)
-    {
-        out_time.setHMS(out_time.hour(),out_time.minute(),out_time.second()-1);
-    }
+        if (out_time.second()==0)
+        {
+            out_time.setHMS(out_time.hour(),out_time.minute()-1,59);
+            was_update=true;
+        }
+        if (out_time.minute()==0 && out_time.second()==0)
+        {
+            out_time.setHMS(out_time.hour()-1,59,59);
+            was_update=true;
+        }
+        if (was_update==false)
+        {
+            out_time.setHMS(out_time.hour(),out_time.minute(),out_time.second()-1);
+        }
 
-    ui->for_call->setText(out_time.toString());
+        ui->for_call->setText(out_time.toString());
 
 }
 
@@ -463,3 +477,52 @@ void MainWindow::on_Exit_clicked()
     }
 }
 
+
+void MainWindow::on_change_bell_in_autoWeek_clicked()
+{
+    int selected_days = ui->view_autoWeek->selectionModel()->selectedRows().count();
+
+
+    if (selected_days>1 || selected_days==0 )
+    {
+        QMessageBox::critical(this,"Выберите один день","Для изменения длительности уроков выберите один день");
+        return;
+    }
+    QString day = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(ui->view_autoWeek->selectionModel()->selectedRows().at(0).row(),0)).toString();
+    QStringList times = {"45","40","-"};
+    QString time = QInputDialog::getItem(this,"Звонок","Выберите длительность уроков для звонка на:\n"+day,times);
+
+    int row = 0;
+Settings->beginGroup("AutoWeek");
+    if (day=="Понедельник"){
+        Settings->setValue("Monday",time);
+        row = 0;
+} else if (day=="Вторник") {
+        row = 1;
+        Settings->setValue("Tuesday",time);
+
+}else if (day=="Среда"){
+        row = 2;
+        Settings->setValue("Wednesday",time);
+
+} else if (day=="Четверг") {
+        row = 3;
+        Settings->setValue("Thursday",time);
+
+} else if (day=="Пятница") {
+        row = 4;
+        Settings->setValue("Friday",time);
+
+} else if (day=="Суббота") {
+        row = 5;
+        Settings->setValue("Saturday",time);
+
+} else if (day=="Воскресенье") {
+        row = 6;
+        Settings->setValue("Sunday",time);
+
+}
+    Settings->endGroup();
+
+    AutoWeek->setData(AutoWeek->index(row,1),time);
+}
