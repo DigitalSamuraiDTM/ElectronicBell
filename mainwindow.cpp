@@ -21,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
     AutoWeek->appendRow(QList<QStandardItem*>()<<new QStandardItem("Воскресенье")<<new QStandardItem(Settings->value("Sunday", "-").toString()));
 
     Settings->endGroup();
+    ui->view_autoWeek->verticalHeader()->setVisible(true);
+    ui->view_autoWeek->horizontalHeader()->setVisible(true);
+    ui->view_autoWeek->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->view_autoWeek->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     AutoWeek->setHorizontalHeaderLabels(QStringList()<<"День"<<"Уроки");
     ui->view_autoWeek->setModel(AutoWeek);
     ui->view_autoWeek->resizeColumnsToContents();
@@ -39,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->volume_number->setText(QString::number(volume)+"%");
     ui->route_audio_on_peremena->setText(Settings->value("RootAudioPeremena","main.mp3").toString());
     ui->route_audio->setText(rootAudio);
+
+    bell_off = new QTimer(this);
+    connect(bell_off, SIGNAL(timeout()), this, SLOT(bell_is_off()));
+
     timer_now_time = new QTimer(this);
     connect(timer_now_time, SIGNAL(timeout()), this, SLOT(now_time()));
 
@@ -206,7 +214,9 @@ void MainWindow::on_hand_mod_clicked()
 {
     AutoWeekTimer->stop();
     timer_now_time->stop();
+    bell_off->stop();
     hand_mod_timer->start(1000);
+    is_it_auto = false;
     hand_mod = "true";
     ui->auto_box->setEnabled(false);
     ui->for_call->hide();
@@ -224,7 +234,14 @@ void MainWindow::on_autoWeek_clicked()
     ui->Send_call->hide();
     ui->day_of_week->show();
     hand_mod_timer->stop();
+    bell_off->stop();
+
+    AutoWeekTimer->stop();
     timer_now_time->stop();
+
+    is_it_auto = true;
+
+    ui->auto_box->setEnabled(false);
     ui->this_day->setText(QDate::currentDate().toString("dddd"));
     QString day = QDate::currentDate().toString("dddd");
     QString type_bell;
@@ -246,21 +263,30 @@ void MainWindow::on_autoWeek_clicked()
 
     if (type_bell=="45") {
         list_timing= {QStringList()<<"08:30"<<"09:15"<<"09:25"<<"10:10"<<"10:25"<<"11:10"<<"11:30"<<"12:15"<<"12:30"<<"13:15"<<"13:30"<<"14:15"<<"14:25"<<"15:05"};
-
+        check_next_time_bell();
+        check_ostatok();
+        AutoWeekTimer->start(1000);
+        hand_mod = "week";
+        Settings->setValue("Mod","week");
     } else if (type_bell=="40") {
         list_timing= {QStringList()<<"08:30"<<"09:10"<<"09:20"<<"10:00"<<"10:15"<<"10:55"<<"11:10"<<"11:50"<<"12:05"<<"12:45"<<"12:55"<<"13:35"};
-
+        check_next_time_bell();
+        check_ostatok();
+        AutoWeekTimer->start(1000);
+        hand_mod = "week";
+        Settings->setValue("Mod","week");
 } else if (type_bell=="-") {
-        //ТУТ ЧТО_ТО ДОЛЖНО БЫТЬ
+        //list_timing = {QStringList()<<"-"};
+        ui->next_call->setText("-");
+        ui->event_label->setText("-");
+        bell_off->start(1000);
+        Settings->setValue("Mod","week");
+
 } else{
         QMessageBox::critical(this,"Ошибка","Программа не смогла распознать расписание уроков: "+type_bell+"\n Программа автоматически перестроится на ручной режим");
         ui->hand_mod->click();
         return;
     }
-
-    AutoWeekTimer->start(1000);
-    hand_mod = "week";
-    Settings->setValue("Mod","week");
 }
 
 void MainWindow::on_auto_mod_clicked()
@@ -268,8 +294,9 @@ void MainWindow::on_auto_mod_clicked()
 
     AutoWeekTimer->stop();
     hand_mod_timer->stop();
-    timer_now_time->start(1000);
+    bell_off->stop();
     hand_mod = "false";
+    is_it_auto = false;
     ui->auto_box->setEnabled(true);
     ui->for_call->show();
     ui->Send_call->hide();
@@ -292,6 +319,7 @@ void MainWindow::on_auto_mod_clicked()
         ui->custom_template->setChecked(true);
     }
     }
+        timer_now_time->start(1000);
        Settings->setValue("Mod", "true");
 }
 
@@ -579,6 +607,10 @@ Settings->beginGroup("AutoWeek");
     Settings->endGroup();
 
     AutoWeek->setData(AutoWeek->index(row,1),time);
+    if (is_it_auto==true)
+    {
+        ui->autoWeek->click();
+    }
 }
 
 void MainWindow::hand_mod_now_time()
@@ -588,7 +620,71 @@ void MainWindow::hand_mod_now_time()
 
 void MainWindow::AutoWeek_now_time()
 {
-
+    if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
+    {
+        qDebug()<<"SSSSSS";
+        ui->autoWeek->click();
+    }
     ui->now_time->setText(QTime::currentTime().toString());
+    repeat_checking++;
 
+    if (repeat_checking==60)
+    {
+        first_check_ostatok=false;
+    }
+    if (first_check_ostatok==false)
+    {
+        repeat_checking = 0;
+        first_check_ostatok=true;
+        check_ostatok();
+    } else{
+        bool was_update = false;
+        QTime out_time = QTime::fromString(ui->for_call->text());
+
+
+
+        if (out_time.second()==0)
+        {
+            out_time.setHMS(out_time.hour(),out_time.minute()-1,59);
+            was_update=true;
+        }
+        if (out_time.minute()==0 && out_time.second()==0)
+        {
+            out_time.setHMS(out_time.hour()-1,59,59);
+            was_update=true;
+        }
+        if (was_update==false)
+        {
+            out_time.setHMS(out_time.hour(),out_time.minute(),out_time.second()-1);
+        }
+
+        ui->for_call->setText(out_time.toString());
+
+}
+    if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
+    {
+        if (na_peremeny==false)
+        {
+            //ONLY LINUX
+            //file://
+            qDebug()<<"НА УРОК";
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
+        } else{
+            qDebug()<<"НА ПЕРЕМЕНУ";
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
+        }
+        main_player->play();
+        check_next_time_bell();
+    }
+}
+
+void MainWindow::bell_is_off()
+{
+
+    if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
+    {
+        ui->autoWeek->click();
+    }
+    ui->for_call->setText("Звонок выключен");
+    ui->now_time->setText(QTime::currentTime().toString());
 }

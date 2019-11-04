@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>485</height>
+    <height>516</height>
    </rect>
   </property>
   <property name="font">
@@ -39,7 +39,7 @@
     <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -439,6 +439,9 @@
               <layout class="QGridLayout" name="gridLayout_13">
                <item row="1" column="0" colspan="2">
                 <widget class="QTableView" name="view_autoWeek">
+                 <attribute name="horizontalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
                  <attribute name="horizontalHeaderStretchLastSection">
                   <bool>false</bool>
                  </attribute>
