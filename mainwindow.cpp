@@ -622,7 +622,6 @@ void MainWindow::AutoWeek_now_time()
 {
     if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
     {
-        qDebug()<<"SSSSSS";
         ui->autoWeek->click();
     }
     ui->now_time->setText(QTime::currentTime().toString());
@@ -668,10 +667,10 @@ void MainWindow::AutoWeek_now_time()
             //ONLY LINUX
             //file://
             qDebug()<<"НА УРОК";
-            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
+            main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
         } else{
             qDebug()<<"НА ПЕРЕМЕНУ";
-            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
+            main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
         }
         main_player->play();
         check_next_time_bell();
