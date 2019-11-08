@@ -6,7 +6,7 @@ QDialogTime::QDialogTime(QTime time,QString name,QWidget *pwgt /*=0*/) : QDialog
     edit = new QTimeEdit(time);
     QPushButton *ok = new QPushButton("Далее");
     connect(ok,SIGNAL(clicked()), SLOT(accept()));
-    QLabel *sel_time = new QLabel(name+"/16");
+    QLabel *sel_time = new QLabel("№ "+name);
 
     QPushButton *decline = new QPushButton("Закончить");
     connect(decline,SIGNAL(clicked()), SLOT(reject()));

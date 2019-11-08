@@ -131,10 +131,10 @@ void MainWindow::now_time()
                 //ONLY LINUX
                 //file://
                 qDebug()<<"НА УРОК";
-                main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+                main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
             } else{
                 qDebug()<<"НА ПЕРЕМЕНУ";
-                main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+                main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
             }
             main_player->play();
             check_next_time_bell();
@@ -331,10 +331,10 @@ void MainWindow::on_Send_call_clicked()
         bool was_lesson = turn->get_bool();
         if (was_lesson==true)
         {
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
 
         } else{
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
 
         }
         delete turn;
@@ -570,9 +570,19 @@ void MainWindow::on_change_bell_in_autoWeek_clicked()
         QMessageBox::critical(this,"Выберите один день","Для изменения длительности уроков выберите один день");
         return;
     }
+
+
+    QStringList listCustomTemplates;
+    for (int i=0;i<ui->view_custom_template->model()->rowCount();i++)
+    {
+        listCustomTemplates.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,0)).toString());
+    }
+    qDebug()<<listCustomTemplates;
+
     QString day = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(ui->view_autoWeek->selectionModel()->selectedRows().at(0).row(),0)).toString();
     QStringList times = {"45","40","-"};
     QString time = QInputDialog::getItem(this,"Звонок","Выберите длительность уроков для звонка на:\n"+day,times);
+
 
     int row = 0;
 Settings->beginGroup("AutoWeek");
@@ -667,10 +677,10 @@ void MainWindow::AutoWeek_now_time()
             //ONLY LINUX
             //file://
             qDebug()<<"НА УРОК";
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
         } else{
             qDebug()<<"НА ПЕРЕМЕНУ";
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
         }
         main_player->play();
         check_next_time_bell();
