@@ -404,7 +404,7 @@ void MainWindow::on_lessons_40_minuts_clicked()
     ui->delete_template->setEnabled(false);
     ui->add_template->setEnabled(false);
     ui->select_template->setEnabled(false);
-    list_timing= {QStringList()<<"08:30"<<"09:10"<<"09:20"<<"10:00"<<"10:15"<<"10:55"<<"11:10"<<"11:50"<<"12:05"<<"12:45"<<"12:55"<<"13:35"};
+    list_timing= {QStringList()<<"08:30"<<"09:10"<<"09:20"<<"10:00"<<"10:15"<<"10:55"<<"11:10"<<"11:50"<<"12:05"<<"12:45"<<"12:55"<<"13:35"<<"13:45"<<"14:25"};
     check_next_time_bell();
     Settings->setValue("Template",40);
 }
