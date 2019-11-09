@@ -231,6 +231,7 @@ void MainWindow::on_hand_mod_clicked()
 
 void MainWindow::on_autoWeek_clicked()
 {
+    ui->for_call->show();
     ui->Send_call->hide();
     ui->day_of_week->show();
     hand_mod_timer->stop();
@@ -240,7 +241,7 @@ void MainWindow::on_autoWeek_clicked()
     timer_now_time->stop();
 
     is_it_auto = true;
-
+    list_timing.clear();
     ui->auto_box->setEnabled(false);
     ui->this_day->setText(QDate::currentDate().toString("dddd"));
     QString day = QDate::currentDate().toString("dddd");
@@ -269,23 +270,38 @@ void MainWindow::on_autoWeek_clicked()
         hand_mod = "week";
         Settings->setValue("Mod","week");
     } else if (type_bell=="40") {
-        list_timing= {QStringList()<<"08:30"<<"09:10"<<"09:20"<<"10:00"<<"10:15"<<"10:55"<<"11:10"<<"11:50"<<"12:05"<<"12:45"<<"12:55"<<"13:35"};
+        list_timing= {QStringList()<<"08:30"<<"09:10"<<"09:20"<<"10:00"<<"10:15"<<"10:55"<<"11:10"<<"11:50"<<"12:05"<<"12:45"<<"12:55"<<"13:35"<<"13:45"<<"14:25"};
         check_next_time_bell();
         check_ostatok();
         AutoWeekTimer->start(1000);
         hand_mod = "week";
         Settings->setValue("Mod","week");
-} else if (type_bell=="-") {
-        //list_timing = {QStringList()<<"-"};
+} else if (type_bell=="выключен") {
         ui->next_call->setText("-");
         ui->event_label->setText("-");
         bell_off->start(1000);
         Settings->setValue("Mod","week");
 
 } else{
-        QMessageBox::critical(this,"Ошибка","Программа не смогла распознать расписание уроков: "+type_bell+"\n Программа автоматически перестроится на ручной режим");
-        ui->hand_mod->click();
-        return;
+        for (int i=0; i<ui->view_custom_template->model()->rowCount();i++)
+        {
+            if (type_bell==ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,0)).toString())
+            {
+               list_timing = ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,1)).toString().split("/");
+               check_next_time_bell();
+                check_ostatok();
+                AutoWeekTimer->start(1000);
+                hand_mod = "week";
+                Settings->setValue("Mod","week");
+                return;
+            }
+        }
+        if (list_timing.isEmpty())
+        {
+            QMessageBox::critical(this,"Ошибка","Программа не смогла распознать расписание уроков: "+type_bell+"\n Программа автоматически перестроится на ручной режим");
+            ui->hand_mod->click();
+            return;
+        }
     }
 }
 
@@ -577,10 +593,11 @@ void MainWindow::on_change_bell_in_autoWeek_clicked()
     {
         listCustomTemplates.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,0)).toString());
     }
-    qDebug()<<listCustomTemplates;
+
 
     QString day = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(ui->view_autoWeek->selectionModel()->selectedRows().at(0).row(),0)).toString();
-    QStringList times = {"45","40","-"};
+    QStringList times = {"45","40","выключен"};
+    times.append(listCustomTemplates);
     QString time = QInputDialog::getItem(this,"Звонок","Выберите длительность уроков для звонка на:\n"+day,times);
 
 
