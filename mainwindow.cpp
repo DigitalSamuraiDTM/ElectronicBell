@@ -131,10 +131,10 @@ void MainWindow::now_time()
                 //ONLY LINUX
                 //file://
                 qDebug()<<"НА УРОК";
-                main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+                main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
             } else{
                 qDebug()<<"НА ПЕРЕМЕНУ";
-                main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+                main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
             }
             main_player->play();
             check_next_time_bell();
@@ -347,10 +347,10 @@ void MainWindow::on_Send_call_clicked()
         bool was_lesson = turn->get_bool();
         if (was_lesson==true)
         {
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
 
         } else{
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
 
         }
         delete turn;
@@ -694,10 +694,10 @@ void MainWindow::AutoWeek_now_time()
             //ONLY LINUX
             //file://
             qDebug()<<"НА УРОК";
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudio","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
         } else{
             qDebug()<<"НА ПЕРЕМЕНУ";
-            main_player->setMedia(QUrl("file://"+Settings->value("RootAudioPeremena","main.mp3").toString()));
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
         }
         main_player->play();
         check_next_time_bell();
