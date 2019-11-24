@@ -66,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
                                   <<new QStandardItem(AutoSettings->value(AutoSettings->allKeys().at(i)).toString()));
 
     }
+    ui->view_custom_template->setModel(customTemplate);
 
     if (auto_mod=="true")
     {
@@ -75,7 +76,6 @@ MainWindow::MainWindow(QWidget *parent) :
     } else if (auto_mod=="week") {
         ui->autoWeek->click();
 }
-    ui->view_custom_template->setModel(customTemplate);
     ui->view_custom_template->resizeColumnsToContents();
     setFont(QFont("Calibri",15));
     //timer_now_time->start(1000);
@@ -89,6 +89,22 @@ MainWindow::~MainWindow()
 void MainWindow::now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
+    if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
+    {
+        if (na_peremeny==false)
+        {
+            //ONLY LINUX
+            //file://
+            qDebug()<<"НА УРОК";
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
+        } else{
+            qDebug()<<"НА ПЕРЕМЕНУ";
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
+        }
+        main_player->play();
+        check_next_time_bell();
+
+   }
     repeat_checking++;
     if (repeat_checking==60)
     {
@@ -99,6 +115,7 @@ void MainWindow::now_time()
         repeat_checking = 0;
         first_check_ostatok=true;
         check_ostatok();
+        return;
     } else{
         bool was_update = false;
         QTime out_time = QTime::fromString(ui->for_call->text());
@@ -124,22 +141,6 @@ void MainWindow::now_time()
 
 }
 
-        if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
-        {
-            if (na_peremeny==false)
-            {
-                //ONLY LINUX
-                //file://
-                qDebug()<<"НА УРОК";
-                main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
-            } else{
-                qDebug()<<"НА ПЕРЕМЕНУ";
-                main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
-            }
-            main_player->play();
-            check_next_time_bell();
-
-       }
 }
 
 void MainWindow::check_next_time_bell()
@@ -236,13 +237,13 @@ void MainWindow::on_autoWeek_clicked()
     ui->day_of_week->show();
     hand_mod_timer->stop();
     bell_off->stop();
-
     AutoWeekTimer->stop();
     timer_now_time->stop();
 
+    ui->box_templates->setEnabled(false);
+    ui->auto_box->setEnabled(true);
     is_it_auto = true;
     list_timing.clear();
-    ui->auto_box->setEnabled(false);
     ui->this_day->setText(QDate::currentDate().toString("dddd"));
     QString day = QDate::currentDate().toString("dddd");
     QString type_bell;
@@ -314,6 +315,7 @@ void MainWindow::on_auto_mod_clicked()
     hand_mod = "false";
     is_it_auto = false;
     ui->auto_box->setEnabled(true);
+    ui->box_templates->setEnabled(true);
     ui->for_call->show();
     ui->Send_call->hide();
     ui->day_of_week->hide();
@@ -647,11 +649,28 @@ void MainWindow::hand_mod_now_time()
 
 void MainWindow::AutoWeek_now_time()
 {
+    ui->now_time->setText(QTime::currentTime().toString());
+    if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
+    {
+        if (na_peremeny==false)
+        {
+            //ONLY LINUX
+            //file://
+            qDebug()<<"НА УРОК";
+            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
+        } else{
+            qDebug()<<"НА ПЕРЕМЕНУ";
+            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
+        }
+        main_player->play();
+        check_next_time_bell();
+        return;
+    }
     if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
     {
         ui->autoWeek->click();
+        return;
     }
-    ui->now_time->setText(QTime::currentTime().toString());
     repeat_checking++;
 
     if (repeat_checking==60)
@@ -663,6 +682,7 @@ void MainWindow::AutoWeek_now_time()
         repeat_checking = 0;
         first_check_ostatok=true;
         check_ostatok();
+        return;
     } else{
         bool was_update = false;
         QTime out_time = QTime::fromString(ui->for_call->text());
@@ -687,21 +707,6 @@ void MainWindow::AutoWeek_now_time()
         ui->for_call->setText(out_time.toString());
 
 }
-    if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
-    {
-        if (na_peremeny==false)
-        {
-            //ONLY LINUX
-            //file://
-            qDebug()<<"НА УРОК";
-            main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
-        } else{
-            qDebug()<<"НА ПЕРЕМЕНУ";
-            main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
-        }
-        main_player->play();
-        check_next_time_bell();
-    }
 }
 
 void MainWindow::bell_is_off()
@@ -710,6 +715,7 @@ void MainWindow::bell_is_off()
     if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
     {
         ui->autoWeek->click();
+        return;
     }
     ui->for_call->setText("Звонок выключен");
     ui->now_time->setText(QTime::currentTime().toString());
