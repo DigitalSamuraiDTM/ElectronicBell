@@ -103,6 +103,7 @@ void MainWindow::now_time()
         }
         main_player->play();
         check_next_time_bell();
+        return;
 
    }
     repeat_checking++;
