@@ -13,6 +13,7 @@
 #include "QDialog"
 #include "qdialogtime.h"
 #include "lesson_or_turn.h"
+#include "alternativeinput.h"
 namespace Ui {
 class MainWindow;
 }
@@ -91,6 +92,8 @@ private:
 
     QStandardItemModel *AutoWeek;
     QStandardItemModel *customTemplate;
+
+    alternativeInput *input;
 };
 
 #endif // MAINWINDOW_H

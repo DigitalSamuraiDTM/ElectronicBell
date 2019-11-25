@@ -25,17 +25,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        alternativeinput.cpp \
         lesson_or_turn.cpp \
         main.cpp \
         mainwindow.cpp \
         qdialogtime.cpp
 
 HEADERS += \
+        alternativeinput.h \
         lesson_or_turn.h \
         mainwindow.h \
         qdialogtime.h
 
 FORMS += \
+        alternativeinput.ui \
         mainwindow.ui
 
 

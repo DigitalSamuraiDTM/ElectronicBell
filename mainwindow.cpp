@@ -492,6 +492,10 @@ void MainWindow::on_add_template_clicked()
         QString customTemplate;
         QTime time = QTime(8,30);
         int i=1;
+        int test = QMessageBox::question(this, "режим создания шаблона", "Выберите режим создания шаблона", QObject::tr("Без ограничений"), QObject::tr("7 уроков"));
+        if (test==0)
+        {
+
         while (true) {
 
             QDialogTime *timer = new QDialogTime(time,QString::number(i));
@@ -507,7 +511,21 @@ void MainWindow::on_add_template_clicked()
             i+=1;
             delete timer;
         }
+        } else if (test==1) {
+            input = new alternativeInput;
+            if (input->exec()==QDialog::Accepted)
+            {
+
+                 helpList = input->take_data();
+
+            } else{
+                return;
+
+            }
+            delete  input;
         }
+
+    }
     AutoSettings->setValue(name,helpList.join("/"));
     customTemplate->appendRow(QList<QStandardItem*>()<<new QStandardItem(name)<< new QStandardItem(helpList.join("/")));
     ui->view_custom_template->resizeColumnsToContents();
