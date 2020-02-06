@@ -10,3 +10,4 @@ int main(int argc, char *argv[])
     a.setFont(QFont("Calibri",15));
     return a.exec();
 }
+/* СМОТРИ mainwindow.cpp */

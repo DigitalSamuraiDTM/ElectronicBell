@@ -1,3 +1,9 @@
+/*  В общем это программа настоящего мужчины
+ *
+ *
+ *
+ */
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
@@ -33,15 +39,22 @@ MainWindow::MainWindow(QWidget *parent) :
     customTemplate->setHorizontalHeaderLabels(QStringList()<<"Имя"<<"Шаблон");
     AutoSettings = new QSettings("customTemplates.ini", QSettings::IniFormat,this);
     main_player = new QMediaPlayer;
-   QString rootAudio = Settings->value("RootAudio","main.mp3").toString();
+   QString rootAudio = Settings->value("RootAudio","НЕ ВЫБРАНО").toString();
     int volume = Settings->value("Volume",100).toInt();
     QString auto_mod = Settings->value("Mod", "true").toString();
-
+    callFrom1Min  = Settings->value("Call1Min",false).toBool();
+    if (callFrom1Min==0){
+        ui->No_1min->click();
+    } else{
+        ui->Yes_1min->click();
+    }
     main_player->setVolume(volume);
     ui->slider_volume->setValue(volume);
 
+    ui->route_1min_fromLes->setText(Settings->value("RootAudio1MinFromLess","НЕ ВЫБРАНО").toString());
+    ui->route_route_on_1min_fromDelay->setText(Settings->value("RootAudio1MinFromPer","НЕ ВЫБРАНО").toString());
     ui->volume_number->setText(QString::number(volume)+"%");
-    ui->route_audio_on_peremena->setText(Settings->value("RootAudioPeremena","main.mp3").toString());
+    ui->route_audio_on_peremena->setText(Settings->value("RootAudioPeremena","НЕ ВЫБРАНО").toString());
     ui->route_audio->setText(rootAudio);
 
     bell_off = new QTimer(this);
@@ -78,7 +91,6 @@ MainWindow::MainWindow(QWidget *parent) :
 }
     ui->view_custom_template->resizeColumnsToContents();
     setFont(QFont("Calibri",15));
-    //timer_now_time->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -89,6 +101,7 @@ MainWindow::~MainWindow()
 void MainWindow::now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
+    //todo 1 min
     if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
     {
         if (na_peremeny==false)
@@ -557,6 +570,7 @@ void MainWindow::on_delete_template_clicked()
 
 void MainWindow::on_select_template_clicked()
 {
+    //todo gavno
      int count_selected_rows = ui->view_custom_template->selectionModel()->selectedRows().count();
      if (count_selected_rows>1)
      {
@@ -600,7 +614,7 @@ void MainWindow::on_Exit_clicked()
 void MainWindow::on_change_bell_in_autoWeek_clicked()
 {
     int selected_days = ui->view_autoWeek->selectionModel()->selectedRows().count();
-
+    //TODO todo
 
     if (selected_days>1 || selected_days==0 )
     {
@@ -669,6 +683,7 @@ void MainWindow::hand_mod_now_time()
 void MainWindow::AutoWeek_now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
+    //TODO 1 min
     if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
     {
         if (na_peremeny==false)
@@ -738,4 +753,40 @@ void MainWindow::bell_is_off()
     }
     ui->for_call->setText("Звонок выключен");
     ui->now_time->setText(QTime::currentTime().toString());
+}
+
+void MainWindow::on_selected_route_1minLess_clicked()
+{
+    QString rootAudio;
+    rootAudio = QFileDialog::getOpenFileName(this,"Выберите mp3","","mp3 (*.mp3)");
+    if (rootAudio=="")
+    {
+        return;
+    }
+
+    Settings->setValue("RootAudio1MinFromLess",rootAudio);
+    ui->route_1min_fromLes->setText(rootAudio);
+}
+
+void MainWindow::on_selected_route_1minDel_clicked()
+{
+    QString rootAudio;
+    rootAudio = QFileDialog::getOpenFileName(this,"Выберите mp3","","mp3 (*.mp3)");
+    if (rootAudio=="")
+    {
+        return;
+    }
+
+    Settings->setValue("RootAudio1MinFromPer",rootAudio);
+    ui->route_route_on_1min_fromDelay->setText(rootAudio);
+}
+
+void MainWindow::on_Yes_1min_clicked()
+{
+    Settings->setValue("Call1Min",callFrom1Min);
+}
+
+void MainWindow::on_No_1min_clicked()
+{
+    Settings->setValue("Call1Min",callFrom1Min);
 }

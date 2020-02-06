@@ -70,6 +70,14 @@ private slots:
     void AutoWeek_now_time();
 
     void bell_is_off();
+    void on_selected_route_1minLess_clicked();
+
+    void on_selected_route_1minDel_clicked();
+
+    void on_Yes_1min_clicked();
+
+    void on_No_1min_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTimer *timer_now_time;
@@ -94,6 +102,8 @@ private:
     QStandardItemModel *customTemplate;
 
     alternativeInput *input;
+
+    bool callFrom1Min;
 };
 
 #endif // MAINWINDOW_H
