@@ -607,7 +607,7 @@ void MainWindow::on_delete_template_clicked()
     QString name = QInputDialog::getItem(this,"Удаление шаблона","Выберите название шаблона для удаления",names,0,false,&ok);
     if (!ok)
     {
-        return
+        return;
     }
     int num_row = names.indexOf(name);
     ui->view_custom_template->model()->removeRow(num_row);
