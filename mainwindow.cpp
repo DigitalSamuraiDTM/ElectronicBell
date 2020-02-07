@@ -1,6 +1,13 @@
 /*  В общем это программа настоящего мужчины
+ *  Разработка шла и закончена в 2020 году. Разработана программа
+ * Нугаевым Андреем Александровичем (e-mail: nugaev.andrei@gmail.com)
+ * Для МАОУ "Лицей" города Лесной Свердловской области
  *
+ * ССылка на GitHub: https://github.com/DigitalSamuraiDTM/ElectronicBell
  *
+ * Предикшн к коду:
+ * Код возможно не самый оптимизированный и не самый оптимальный, но это полностью готовое решение.
+ * Дописывать или переписывать программу разрешается (open source), но с учетом указания ФИО разработчика и имени СОЗДАТЕЛЯ программы
  *
  */
 
@@ -43,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     int volume = Settings->value("Volume",100).toInt();
     QString auto_mod = Settings->value("Mod", "true").toString();
     callFrom1Min  = Settings->value("Call1Min",false).toBool();
-    if (callFrom1Min==0){
+    if (callFrom1Min==false){
         ui->No_1min->click();
     } else{
         ui->Yes_1min->click();
@@ -98,10 +105,50 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+
+void MainWindow::call_1Min(){
+
+    if (wasCreate1Min==false)
+    {
+        wasCreate1Min=true;
+        int hours = next_time.hour();
+        int min = next_time.minute();
+        if (min==0)
+        {
+            call1Min.setHMS(hours-1,59,0);
+        } else{
+            call1Min.setHMS(hours,min-1,0);
+        }
+
+    } else{
+        if (call1Min.hour()==QTime::currentTime().hour() && call1Min.minute()==QTime::currentTime().minute() && call1Min.second()==QTime::currentTime().second())
+        {
+            if (na_peremeny==false)
+            {
+                //ONLY LINUX
+                //file://
+                qDebug()<<"НА УРОК";
+                main_player->setMedia(QUrl(Settings->value("RootAudio1MinFromLess","main.mp3").toString()));
+            } else{
+                qDebug()<<"НА ПЕРЕМЕНУ";
+                main_player->setMedia(QUrl(Settings->value("RootAudio1MinFromPer","main.mp3").toString()));
+            }
+            main_player->play();
+        }
+    }
+}
+
 void MainWindow::now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
-    //todo 1 min
+
+    if (callFrom1Min==true)
+    {
+        call_1Min();
+    }
+
+
     if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
     {
         if (na_peremeny==false)
@@ -159,6 +206,7 @@ void MainWindow::now_time()
 
 void MainWindow::check_next_time_bell()
 {
+    wasCreate1Min = false;
     QTime current = QTime::currentTime();
     int current_hour = current.hour();
     int current_min = current.minute();
@@ -246,6 +294,7 @@ void MainWindow::on_hand_mod_clicked()
 
 void MainWindow::on_autoWeek_clicked()
 {
+    ui->select_template->setEnabled(false);
     ui->for_call->show();
     ui->Send_call->hide();
     ui->day_of_week->show();
@@ -322,7 +371,7 @@ void MainWindow::on_autoWeek_clicked()
 
 void MainWindow::on_auto_mod_clicked()
 {
-
+    ui->select_template->setEnabled(true);
     AutoWeekTimer->stop();
     hand_mod_timer->stop();
     bell_off->stop();
@@ -547,17 +596,27 @@ void MainWindow::on_add_template_clicked()
 
 void MainWindow::on_delete_template_clicked()
 {
+    int row = ui->view_custom_template->model()->rowCount();
+    QStringList names;
+    for (int i=0;i<row;i++)
+    {
+        names.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(0,i)).toString());
+    }
+
+    bool ok;
+    QString name = QInputDialog::getItem(this,"Удаление шаблона","Выберите название шаблона для удаления",names,0,false,&ok);
+    if (!ok)
+    {
+        return
+    }
+    int num_row = names.indexOf(name);
+    ui->view_custom_template->model()->removeRow(num_row);
+
     if (ui->view_custom_template->model()==nullptr)
     {
         return;
     }
-    QList<QModelIndex> index = ui->view_custom_template->selectionModel()->selectedRows();
-    int count_selected_rows = ui->view_custom_template->selectionModel()->selectedRows().count();
     QString last_templ = AutoSettings->value("LastTemplate").toString();
-    for (int i=0;i<count_selected_rows;i++) {
-        QString name = ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(index.at(i).row(),0)).toString();
-        AutoSettings->remove(name);
-        ui->view_custom_template->model()->removeRow(ui->view_custom_template->selectionModel()->selectedRows().at(0).row(), QModelIndex());
         if (name==last_templ)
         {
             ui->selected_template->setText("Выбранный шаблон отсутствует");
@@ -565,21 +624,26 @@ void MainWindow::on_delete_template_clicked()
             QMessageBox::critical(this,"Шаблон","Вы удалили шаблон, который сейчас использовался для подачи звонков.");
             on_custom_template_clicked();
         }
-    }
+
 }
 
 void MainWindow::on_select_template_clicked()
 {
     //todo gavno
-     int count_selected_rows = ui->view_custom_template->selectionModel()->selectedRows().count();
-     if (count_selected_rows>1)
-     {
-         QMessageBox::warning(this,"Шаблон","Выберите один шаблон");
-         return;
-     }
-     int row = ui->view_custom_template->selectionModel()->selectedRows().at(0).row();
-     QString name = ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(row,0)).toString();
-     ui->selected_template->setText(name);
+    int strokes = ui->view_custom_template->model()->rowCount();
+    QStringList list;
+    for (int i = 0;i<strokes;i++)
+    {
+        list.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,0)).toString());
+    }
+    bool ok;
+   QString name = QInputDialog::getItem(this,"Выбор шаблона","Выберите шаблон:",list,0,false,&ok);
+   if (!ok)
+   {
+       return;
+   }
+   int row = list.indexOf(name);
+    ui->selected_template->setText(name);
      AutoSettings->setValue("LastTemplate",name);
      list_timing =  ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(row,1)).toString().split("/");
      check_next_time_bell();
@@ -613,14 +677,11 @@ void MainWindow::on_Exit_clicked()
 
 void MainWindow::on_change_bell_in_autoWeek_clicked()
 {
-    int selected_days = ui->view_autoWeek->selectionModel()->selectedRows().count();
-    //TODO todo
 
-    if (selected_days>1 || selected_days==0 )
-    {
-        QMessageBox::critical(this,"Выберите один день","Для изменения длительности уроков выберите один день");
-        return;
-    }
+    QString day = QInputDialog::getItem(this,"День недели", "Выберите день недели для изменения графика",QStringList()<<"Понедельник"<<"Вторник"<<"Среда"<<"Четверг"<<"Пятница"<<"Суббота"<<"Воскресенье",0);
+
+
+
 
 
     QStringList listCustomTemplates;
@@ -630,40 +691,51 @@ void MainWindow::on_change_bell_in_autoWeek_clicked()
     }
 
 
-    QString day = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(ui->view_autoWeek->selectionModel()->selectedRows().at(0).row(),0)).toString();
     QStringList times = {"45","40","выключен"};
     times.append(listCustomTemplates);
-    QString time = QInputDialog::getItem(this,"Звонок","Выберите длительность уроков для звонка на:\n"+day,times);
+    bool ok;
+    QString time = QInputDialog::getItem(this,"Звонок","Выберите шаблон звонков на:\n"+day,times,0,false,&ok);
+    if(!ok)
+    {
+        return;
+    }
 
 
     int row = 0;
 Settings->beginGroup("AutoWeek");
     if (day=="Понедельник"){
         Settings->setValue("Monday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(0,1),time);
         row = 0;
 } else if (day=="Вторник") {
         row = 1;
         Settings->setValue("Tuesday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(1,1),time);
 
 }else if (day=="Среда"){
         row = 2;
         Settings->setValue("Wednesday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(2,1),time);
 
 } else if (day=="Четверг") {
         row = 3;
         Settings->setValue("Thursday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(3,1),time);
 
 } else if (day=="Пятница") {
         row = 4;
         Settings->setValue("Friday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(4,1),time);
 
 } else if (day=="Суббота") {
         row = 5;
         Settings->setValue("Saturday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(5,1),time);
 
 } else if (day=="Воскресенье") {
         row = 6;
         Settings->setValue("Sunday",time);
+        ui->view_autoWeek->model()->setData(ui->view_autoWeek->model()->index(6,1),time);
 
 }
     Settings->endGroup();
@@ -683,21 +755,25 @@ void MainWindow::hand_mod_now_time()
 void MainWindow::AutoWeek_now_time()
 {
     ui->now_time->setText(QTime::currentTime().toString());
-    //TODO 1 min
+    if (callFrom1Min==true)
+    {
+        call_1Min();
+    }
     if (next_time.hour()==QTime::currentTime().hour() && next_time.minute()==QTime::currentTime().minute() && next_time.second()==QTime::currentTime().second())
     {
         if (na_peremeny==false)
         {
             //ONLY LINUX
             //file://
-            qDebug()<<"НА УРОК";
+            qDebug()<<"ЗА МИНУТУ ДО УРОКА";
             main_player->setMedia(QUrl(Settings->value("RootAudio","main.mp3").toString()));
         } else{
-            qDebug()<<"НА ПЕРЕМЕНУ";
+            qDebug()<<"ЗА МИНУТУ ДО ПЕРЕМЕНЫ";
             main_player->setMedia(QUrl(Settings->value("RootAudioPeremena","main.mp3").toString()));
         }
         main_player->play();
         check_next_time_bell();
+        qDebug()<<"was";
         return;
     }
     if (QTime::currentTime().hour() == 0 && QTime::currentTime().minute()==0 && QTime::currentTime().second()==0)
@@ -783,10 +859,12 @@ void MainWindow::on_selected_route_1minDel_clicked()
 
 void MainWindow::on_Yes_1min_clicked()
 {
+    callFrom1Min = true;
     Settings->setValue("Call1Min",callFrom1Min);
 }
 
 void MainWindow::on_No_1min_clicked()
 {
+    callFrom1Min = false;
     Settings->setValue("Call1Min",callFrom1Min);
 }

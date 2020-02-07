@@ -56,7 +56,6 @@ private slots:
 
     void on_select_template_clicked();
 
-
     void on_selected_audio_peremena_clicked();
 
     void on_Exit_clicked();
@@ -70,6 +69,7 @@ private slots:
     void AutoWeek_now_time();
 
     void bell_is_off();
+
     void on_selected_route_1minLess_clicked();
 
     void on_selected_route_1minDel_clicked();
@@ -77,6 +77,8 @@ private slots:
     void on_Yes_1min_clicked();
 
     void on_No_1min_clicked();
+
+    void call_1Min();
 
 private:
     Ui::MainWindow *ui;
@@ -88,6 +90,7 @@ private:
     QMediaPlayer *main_player;
     QStringList list_timing;
     QTime next_time;
+    QTime call1Min;
 
     QSettings *Settings;
 
@@ -104,6 +107,7 @@ private:
     alternativeInput *input;
 
     bool callFrom1Min;
+    bool wasCreate1Min = false;
 };
 
 #endif // MAINWINDOW_H
