@@ -600,7 +600,7 @@ void MainWindow::on_delete_template_clicked()
     QStringList names;
     for (int i=0;i<row;i++)
     {
-        names.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(0,i)).toString());
+        names.append(ui->view_custom_template->model()->data(ui->view_custom_template->model()->index(i,0)).toString());
     }
 
     bool ok;
@@ -609,6 +609,7 @@ void MainWindow::on_delete_template_clicked()
     {
         return;
     }
+     AutoSettings->remove(name);
     int num_row = names.indexOf(name);
     ui->view_custom_template->model()->removeRow(num_row);
 
