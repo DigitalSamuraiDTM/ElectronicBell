@@ -64,15 +64,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->route_audio_on_peremena->setText(Settings->value("RootAudioPeremena","НЕ ВЫБРАНО").toString());
     ui->route_audio->setText(rootAudio);
 
+    //таймер отключенного звонка
     bell_off = new QTimer(this);
     connect(bell_off, SIGNAL(timeout()), this, SLOT(bell_is_off()));
 
+    //автоматический режим
     timer_now_time = new QTimer(this);
     connect(timer_now_time, SIGNAL(timeout()), this, SLOT(now_time()));
 
+    //ручной режим
     hand_mod_timer = new QTimer(this);
     connect(hand_mod_timer, SIGNAL(timeout()), this, SLOT(hand_mod_now_time()));
 
+    //режим авто недели
     AutoWeekTimer = new QTimer(this);
     connect(AutoWeekTimer, SIGNAL(timeout()), this, SLOT(AutoWeek_now_time()));
 
@@ -107,8 +111,8 @@ MainWindow::~MainWindow()
 
 
 
-void MainWindow::call_1Min(){
-
+void MainWindow::call_1Min()
+{
     if (wasCreate1Min==false)
     {
         wasCreate1Min=true;
@@ -617,12 +621,22 @@ void MainWindow::on_delete_template_clicked()
     {
         return;
     }
+    int rowAuto = ui->view_autoWeek->model()->rowCount();
+    for (int i=0;i<rowAuto;i++) {
+        QString templateBell = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(i,1)).toString();
+        if (templateBell==name)
+        {
+
+            QString day = ui->view_autoWeek->model()->data(ui->view_autoWeek->model()->index(i,0)).toString();
+            QMessageBox::critical(this,"Шаблон","Вы удалили шаблон который использовался в день:\n"+day+"\nИзмените график подачи звонков на этот день, иначе программа будет перестроена в ручной режим в этот день");
+        }
+    }
     QString last_templ = AutoSettings->value("LastTemplate").toString();
         if (name==last_templ)
         {
             ui->selected_template->setText("Выбранный шаблон отсутствует");
             AutoSettings->setValue("LastTemplate","None");
-            QMessageBox::critical(this,"Шаблон","Вы удалили шаблон, который сейчас использовался для подачи звонков.");
+            QMessageBox::critical(this,"Шаблон","Вы удалили шаблон, который сейчас использовался для подачи звонков в автоматическом режиме");
             on_custom_template_clicked();
         }
 
@@ -630,7 +644,6 @@ void MainWindow::on_delete_template_clicked()
 
 void MainWindow::on_select_template_clicked()
 {
-    //todo gavno
     int strokes = ui->view_custom_template->model()->rowCount();
     QStringList list;
     for (int i = 0;i<strokes;i++)
@@ -680,9 +693,6 @@ void MainWindow::on_change_bell_in_autoWeek_clicked()
 {
 
     QString day = QInputDialog::getItem(this,"День недели", "Выберите день недели для изменения графика",QStringList()<<"Понедельник"<<"Вторник"<<"Среда"<<"Четверг"<<"Пятница"<<"Суббота"<<"Воскресенье",0);
-
-
-
 
 
     QStringList listCustomTemplates;
