@@ -14,9 +14,9 @@ alternativeInput::~alternativeInput()
 }
 
 
-
 QStringList alternativeInput::take_data()
 {
+    //В цикле получаем дату, если она состоит из однозначная, то дописываем ноль слева
     QStringList list;
     QString m;
 
